@@ -12,7 +12,7 @@ backend:
   # Sign-in for non-technical editors: deploy Sveltia CMS Authenticator (see
   # docs/setup.md) and put its URL here. Until then, editors can use
   # "Sign In with Token".
-  # base_url: https://sveltia-cms-auth.YOUR-ACCOUNT.workers.dev
+  base_url: https://sveltia-cms-auth.darthtrevino.workers.dev
   commit_messages:
     create: "post: create {{slug}} ({{author-login}})"
     update: "post: update {{slug}} ({{author-login}})"
