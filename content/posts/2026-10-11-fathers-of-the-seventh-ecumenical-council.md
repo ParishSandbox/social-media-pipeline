@@ -1,6 +1,6 @@
 ---
 title: Sunday of the Fathers of the Seventh Ecumenical Council
-status: draft
+status: approved
 publish_at: 2026-10-11T07:00:00-05:00
 channels:
   - facebook
