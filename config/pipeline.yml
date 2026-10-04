@@ -1,0 +1,46 @@
+# Parish-wide settings for the social media pipeline.
+# Changes here are picked up by every script and workflow. If you change the
+# timezone, also update `input_timezone` in site/admin/config.yml.
+
+parish:
+  name: "St. Example Orthodox Church"
+  # Hashtags the feast-day agent may append to drafted captions.
+  hashtags:
+    - "#OrthodoxChristianity"
+    - "#OrthodoxChurch"
+
+# IANA timezone of the parish. Used to interpret post times and file dates.
+timezone: America/Chicago
+
+# Public URL where the site/ folder is published (GitHub Pages). Uploaded
+# images and files are served from here so Buffer can fetch them.
+site_url: https://parishsandbox.github.io/social-media-pipeline
+
+calendar:
+  # "gregorian" = New (Revised Julian) Calendar, "julian" = Old Calendar.
+  source: gregorian
+  # How far ahead the feast-day workflow drafts posts.
+  lookahead_days: 90
+  # Draft a post for every Sunday.
+  include_sundays: true
+  # Draft a post for any weekday feast at or above this orthocal feast level:
+  #   5 = Vigil rank (e.g. St Nicholas, St George)
+  #   6 = Great feast (e.g. Beheading of St John)
+  #   7 = Great feast of the Theotokos
+  #   8 = Great feast of the Lord (Nativity, Theophany, Pascha, ...)
+  min_feast_level: 5
+  # Default local time for drafted posts (HH:mm, 24h).
+  default_post_time: "07:00"
+  # Channels drafted posts target by default.
+  default_channels: [facebook, instagram]
+
+buffer:
+  # Buffer channel IDs. Run `npm run buffer:channels` with BUFFER_API_KEY set
+  # to list the IDs for your connected Facebook Page / Instagram account.
+  channels:
+    facebook: ""
+    instagram: ""
+  # Approved posts are only sent to Buffer when they are this many days (or
+  # fewer) from their publish time. Keeps the Buffer queue within free-plan
+  # limits (10 scheduled posts per channel); raise it on a paid plan.
+  schedule_window_days: 14
