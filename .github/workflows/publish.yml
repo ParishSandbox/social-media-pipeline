@@ -1,0 +1,75 @@
+name: Publish site & sync Buffer
+
+# Deploys the editor/media site to GitHub Pages, then reconciles approved posts
+# with Buffer (create / edit / delete) and commits status updates back.
+on:
+  push:
+    branches: [main]
+    paths: [content/**, site/**, config/**, scripts/**]
+  schedule:
+    # Daily: picks up posts entering the scheduling window and marks sent posts as published.
+    - cron: "17 11 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Preview Buffer changes without calling Buffer
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  deploy-site:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+  sync-buffer:
+    needs: deploy-site
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Sync with Buffer
+        env:
+          BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
+        run: |
+          args=()
+          if [ "${{ github.event_name }}" = "schedule" ]; then args+=(--check-published); fi
+          if [ "${{ inputs.dry_run }}" = "true" ]; then args+=(--dry-run); fi
+          node scripts/sync-buffer.mjs "${args[@]}"
+      - name: Commit status updates
+        if: ${{ !inputs.dry_run }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898699+github-actions[bot]@users.noreply.github.com"
+          git add -A content/posts state
+          if git diff --cached --quiet; then echo "Nothing to commit"; exit 0; fi
+          git commit -m "chore: sync post status with Buffer"
+          for attempt in 1 2 3; do
+            if git push; then exit 0; fi
+            git pull --rebase origin main
+          done
+          exit 1

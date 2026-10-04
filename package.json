@@ -1,0 +1,20 @@
+{
+  "name": "social-media-pipeline",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Social media curation pipeline for a parish: Markdown posts, a web editor, feast-day hydration and Buffer scheduling.",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "validate": "node scripts/validate-posts.mjs",
+    "hydrate": "node scripts/hydrate-calendar.mjs",
+    "sync": "node scripts/sync-buffer.mjs",
+    "buffer:channels": "node scripts/buffer-channels.mjs"
+  },
+  "dependencies": {
+    "yaml": "^2.8.1"
+  }
+}

@@ -1,0 +1,183 @@
+# yaml-language-server: $schema=https://unpkg.com/@sveltia/cms/schema/sveltia-cms.json
+#
+# Sveltia CMS configuration for the parish social media editor.
+# Docs: https://sveltiacms.app/en/docs
+#
+# Keep `input_timezone` below in sync with `timezone` in config/pipeline.yml.
+
+backend:
+  name: github
+  repo: ParishSandbox/social-media-pipeline
+  branch: main
+  # Sign-in for non-technical editors: deploy Sveltia CMS Authenticator (see
+  # docs/setup.md) and put its URL here. Until then, editors can use
+  # "Sign In with Token".
+  # base_url: https://sveltia-cms-auth.YOUR-ACCOUNT.workers.dev
+  commit_messages:
+    create: "post: create {{slug}} ({{author-login}})"
+    update: "post: update {{slug}} ({{author-login}})"
+    delete: "post: delete {{slug}} ({{author-login}})"
+    uploadMedia: "media: upload {{path}} ({{author-login}})"
+    deleteMedia: "media: delete {{path}} ({{author-login}})"
+
+site_url: https://parishsandbox.github.io/social-media-pipeline
+display_url: https://parishsandbox.github.io/social-media-pipeline
+
+# Uploaded images and files are committed to site/uploads and published with
+# the site, which gives Buffer a public URL to fetch them from.
+media_folder: /site/uploads
+public_folder: /uploads
+
+slug:
+  encoding: ascii
+  clean_accents: true
+
+collections:
+  - name: posts
+    label: Social Posts
+    label_singular: Post
+    description: >-
+      Write a post, then set its status to "Approved" when it is ready. Approved
+      posts are scheduled in Buffer automatically, and later edits are sent to
+      Buffer too.
+    folder: /content/posts
+    extension: md
+    format: frontmatter
+    create: true
+    delete: true
+    identifier_field: title
+    slug:
+      template: "{{publish_at | date('YYYY-MM-DD')}}-{{slug}}"
+      editable: false
+    summary: "{{publish_at | date('ddd, MMM D YYYY · h:mm A')}} — {{title}} [{{status}}]"
+    sortable_fields:
+      fields: [publish_at, title, status]
+      default:
+        field: publish_at
+        direction: ascending
+    view_groups:
+      - label: Status
+        field: status
+      - label: Month
+        field: publish_at
+        pattern: \d{4}-\d{2}
+    view_filters:
+      - label: Needs writing (draft)
+        field: status
+        pattern: ^draft$
+      - label: Ready for review
+        field: status
+        pattern: ^in-review$
+      - label: Approved / scheduled
+        field: status
+        pattern: ^(approved|scheduled)$
+      - label: Published
+        field: status
+        pattern: ^published$
+      - label: Has a problem
+        field: sync_message
+        pattern: .+
+    fields:
+      - name: title
+        label: Title
+        widget: string
+        hint: A short name for the team, e.g. "St Nicholas". It is not posted.
+
+      - name: status
+        label: Status
+        widget: select
+        default: draft
+        options:
+          - { label: "📝 Draft — still being written", value: draft }
+          - { label: "👀 Ready for review", value: in-review }
+          - { label: "✅ Approved — schedule it", value: approved }
+          - { label: "📅 Scheduled in Buffer (set automatically)", value: scheduled }
+          - { label: "📣 Published (set automatically)", value: published }
+          - { label: "🚫 Canceled — do not post", value: canceled }
+        hint: >-
+          Choose **Approved** when the post is ready. It is then scheduled in
+          Buffer automatically (up to two weeks before the publish time). To pull
+          a scheduled post back, change it to Draft or Canceled.
+
+      - name: publish_at
+        label: Publish date & time
+        widget: datetime
+        input_timezone: America/Chicago
+        hint: Parish local time.
+
+      - name: channels
+        label: Post to
+        widget: select
+        multiple: true
+        min: 1
+        default: [facebook, instagram]
+        options:
+          - { label: Facebook, value: facebook }
+          - { label: Instagram, value: instagram }
+
+      - name: body
+        label: Caption
+        widget: text
+        required: false
+        hint: >-
+          The text of the post, exactly as it should appear. Hashtags go here
+          too. Instagram allows up to 2,200 characters and 30 hashtags.
+
+      - name: images
+        label: Images
+        label_singular: Image
+        widget: list
+        required: false
+        max: 10
+        hint: Instagram posts need at least one image. Add up to 10 for a carousel.
+        summary: "{{alt}}"
+        fields:
+          - { name: image, label: Image, widget: image }
+          - name: alt
+            label: Description (alt text)
+            widget: string
+            required: false
+            hint: Describe the image for people using screen readers, e.g. "Icon of St Nicholas".
+
+      - name: link
+        label: Link
+        widget: string
+        type: url
+        required: false
+        hint: >-
+          Optional link to a YouTube video, livestream, article, or event page.
+          It is added to the end of the caption (on Facebook text-only posts it
+          appears as a link preview).
+
+      - name: attachments
+        label: Files
+        label_singular: File
+        widget: list
+        required: false
+        hint: Optional files such as a bulletin or flyer (PDF). A download link is added to the caption.
+        summary: "{{label}}"
+        fields:
+          - { name: file, label: File, widget: file }
+          - { name: label, label: Link text, widget: string, default: Download }
+
+      - name: first_comment
+        label: First comment
+        widget: text
+        required: false
+        hint: Optional comment posted right after the post (handy for extra hashtags or links).
+
+      - name: notes
+        label: Team notes
+        widget: text
+        required: false
+        hint: For the team only — never posted. Feast-day drafts list the saints and readings here.
+
+      - name: sync_message
+        label: Automation messages
+        widget: string
+        required: false
+        readonly: true
+        hint: Filled in by the automation when something needs your attention.
+
+      - { name: source, label: Source, widget: hidden, default: manual }
+      - { name: orthocal_date, label: Calendar date, widget: hidden, default: "" }
