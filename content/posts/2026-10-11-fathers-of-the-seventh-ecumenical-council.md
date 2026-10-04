@@ -1,12 +1,16 @@
 ---
-title: "Sunday of the Fathers of the Seventh Ecumenical Council"
+title: Sunday of the Fathers of the Seventh Ecumenical Council
 status: draft
 publish_at: 2026-10-11T07:00:00-05:00
 channels:
   - facebook
   - instagram
-source: orthocal
-orthocal_date: 2026-10-11
+images:
+  - image: /uploads/1011to1017bfatherssunday.jpg
+    alt: ''
+link: ''
+attachments: []
+first_comment: ''
 notes: |-
   SAMPLE POST — shows what an automatically drafted feast-day post looks like. Delete it when you start using the pipeline.
   Sunday, 2026-10-11 — Liturgy
@@ -16,6 +20,9 @@ notes: |-
   Fasting: No Fast
   Calendar: https://orthocal.info/readings/gregorian/2026/10/11/
   Add an icon image before approving — Instagram posts need one.
+sync_message: ''
+source: orthocal
+orthocal_date: 2026-10-11
 ---
 
 Today we remember the holy Fathers of the Seventh Ecumenical Council, who gathered in Nicaea in 787 and affirmed the veneration of the holy icons. Because the Word truly became flesh, He can be depicted — and the honor shown to an icon passes to the one it portrays.
@@ -24,6 +31,6 @@ We also commemorate the Apostle Philip of the Seventy and St Theophanes the Hymn
 
 "Remember your leaders, those who spoke to you the word of God; consider the outcome of their life, and imitate their faith." (Hebrews 13:7)
 
-Join us for the Divine Liturgy this morning. ☦️
+Join us for the Divine Liturgy this morning at 10am. ☦️
 
 #OrthodoxChristianity #OrthodoxChurch #HolyIcons
