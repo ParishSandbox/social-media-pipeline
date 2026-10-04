@@ -30,15 +30,53 @@ The editor, and the images Buffer downloads, are served from GitHub Pages.
 Editors need a GitHub account with **write** access to this repository
 (**Settings → Collaborators and teams**).
 
-- **Recommended for non-technical editors:** deploy the free
-  [Sveltia CMS Authenticator](https://github.com/sveltia/sveltia-cms-auth) on
-  Cloudflare Workers (follow its README to create a GitHub OAuth app). Then
-  uncomment `base_url` in `site/admin/config.yml` and set it to the worker URL.
-  Editors then just click **Sign In with GitHub**.
-- **Quick start:** without the authenticator, each editor clicks **Sign In with
-  Token** and pastes a
-  [fine-grained personal access token](https://github.com/settings/personal-access-tokens/new)
-  limited to this repository with **Contents: Read and write**.
+> **Sign In with GitHub does not work until you complete option A.** GitHub
+> Pages cannot run the OAuth exchange itself, so the button needs a small
+> external service. Until then, use **Sign In with Token** (option B).
+
+### Option A (recommended): Sveltia CMS Authenticator
+
+This is a free Cloudflare Worker that handles the GitHub OAuth exchange. Set it
+up once, and editors then just click **Sign In with GitHub**.
+
+1. **Deploy the worker.** Create a free [Cloudflare](https://dash.cloudflare.com/sign-up)
+   account, then use the **Deploy to Cloudflare Workers** button on
+   <https://github.com/sveltia/sveltia-cms-auth>. Copy the worker URL, e.g.
+   `https://sveltia-cms-auth.<subdomain>.workers.dev`.
+2. **Register a GitHub OAuth app.** Use
+   **ParishSandbox → Settings → Developer settings → OAuth Apps → New OAuth App**
+   (an org-owned app survives staff changes):
+   - Application name: `Parish Social Media Editor`
+   - Homepage URL: `https://parishsandbox.github.io/social-media-pipeline/`
+   - Authorization callback URL: `<worker URL>/callback`
+
+   Then click **Generate a new client secret**. Copy the Client ID and the secret.
+3. **Configure the worker.** In Cloudflare, open the `sveltia-cms-auth` worker,
+   go to **Settings → Variables and Secrets**, and add:
+   - `GITHUB_CLIENT_ID`: the Client ID
+   - `GITHUB_CLIENT_SECRET`: the client secret (type **Secret**)
+   - `ALLOWED_DOMAINS`: `parishsandbox.github.io`
+
+   Save and deploy.
+4. **Point the editor at it.** In `site/admin/config.yml`, uncomment `base_url`
+   under `backend`, set it to the worker URL (no trailing slash), and commit.
+   The publish workflow redeploys the site.
+5. If the organization restricts third-party OAuth apps
+   (**Settings → Third-party access**), approve the app. Otherwise editors will
+   sign in successfully but won't see the repository.
+
+### Option B (quick start): personal access token
+
+Each editor creates a
+[fine-grained personal access token](https://github.com/settings/personal-access-tokens/new):
+
+- Resource owner: **ParishSandbox**
+- Repository access: **Only select repositories → social-media-pipeline**
+- Repository permissions: **Contents: Read and write**
+
+Then they click **Sign In with Token** in the editor and paste it. If the
+organization requires approval for fine-grained tokens, an org owner must
+approve each one (**Settings → Personal access tokens → Pending requests**).
 
 > **Branch protection:** the editor commits directly to `main`. If you protect
 > `main` with required reviews, editors cannot save. Use the post statuses for
@@ -73,9 +111,22 @@ The weekly [`hydrate-feast-calendar`](../.github/workflows/hydrate-feast-calenda
 workflow uses [GitHub Agentic Workflows](https://github.github.com/gh-aw/) with
 the Copilot engine.
 
-1. Add a repository secret **`COPILOT_GITHUB_TOKEN`**: a fine-grained personal
-   access token from an account with a Copilot license, with the **Copilot
-   Requests** permission. See the
+1. Create the **`COPILOT_GITHUB_TOKEN`** secret. The person creating it needs
+   a GitHub Copilot license; the workflow's AI usage counts against it.
+   1. Open this
+      [pre-filled token page](https://github.com/settings/personal-access-tokens/new?name=COPILOT_GITHUB_TOKEN&description=GitHub+Agentic+Workflows+-+Copilot+engine+authentication&user_copilot_requests=read).
+   2. Set **Resource owner** to **your user account**, not the organization.
+   3. Leave repository access as **Public repositories** (no repository
+      permissions are needed).
+   4. Under **Account permissions**, check that **Copilot Requests** is **Read**.
+   5. Set an expiration you can remember to renew, then click **Generate token**.
+   6. In this repository, go to **Settings → Secrets and variables → Actions →
+      New repository secret**. Name it `COPILOT_GITHUB_TOKEN` and paste the
+      token. (Or run `gh aw secrets set COPILOT_GITHUB_TOKEN --value "<token>"`.)
+
+   If the organization has centralized Copilot billing, you can skip the token.
+   Add `copilot-requests: write` under `permissions:` in
+   `.github/workflows/hydrate-feast-calendar.md` and recompile. See the
    [gh-aw authentication docs](https://github.github.com/gh-aw/reference/auth/).
 2. Allow GitHub Actions to create pull requests: **Settings → Actions → General
    → Workflow permissions → Allow GitHub Actions to create and approve pull requests**.
