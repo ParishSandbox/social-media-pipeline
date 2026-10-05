@@ -24,9 +24,11 @@ tools:
   edit:
   web-fetch:
   bash:
-    - "node scripts/validate-posts.mjs*"
-    - "cat *"
-    - "ls *"
+    - "node scripts/validate-posts.mjs:*"
+    - "cat"
+    - "ls"
+    - "jq"
+    - "git diff:*"
 
 steps:
   - uses: actions/setup-node@v7
@@ -56,6 +58,16 @@ no posts, stop and do nothing.
 Read `config/pipeline.yml` for the parish name and standard hashtags, and look
 at one or two existing posts in `content/posts/` whose status is `approved`,
 `scheduled` or `published` to match the team's tone.
+
+## Tools available
+
+The shell is restricted. You can run `cat`, `ls`, `jq`, `git diff`, and
+`node scripts/validate-posts.mjs …` only. Python, other `node` commands and
+scripts you write yourself are blocked, so don't try them. Edit each post
+directly with the **edit** tool, one file at a time. The manifest's `items[].file`
+entries are repository-relative paths.
+
+## Instructions
 
 For **each file listed in the manifest** (and no other files):
 
