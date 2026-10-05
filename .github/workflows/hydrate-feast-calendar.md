@@ -24,7 +24,10 @@ tools:
   edit:
   web-fetch:
   bash:
-    - "node scripts/validate-posts.mjs:*"
+    # Copilot CLI matches shell permissions on the command name only, so the
+    # validator needs `node:*`. The agent sandbox is firewalled and has no
+    # write token, so this only lets it run local scripts.
+    - "node:*"
     - "cat"
     - "ls"
     - "jq"
@@ -61,11 +64,10 @@ at one or two existing posts in `content/posts/` whose status is `approved`,
 
 ## Tools available
 
-The shell is restricted. You can run `cat`, `ls`, `jq`, `git diff`, and
-`node scripts/validate-posts.mjs …` only. Python, other `node` commands and
-scripts you write yourself are blocked, so don't try them. Edit each post
-directly with the **edit** tool, one file at a time. The manifest's `items[].file`
-entries are repository-relative paths.
+The shell is restricted. You can run `cat`, `ls`, `jq`, `git diff` and `node`.
+Python is not available. Write captions by editing each post directly with the
+**edit** tool, one file at a time. Don't write helper scripts to generate them.
+The manifest's `items[].file` entries are repository-relative paths.
 
 ## Instructions
 
